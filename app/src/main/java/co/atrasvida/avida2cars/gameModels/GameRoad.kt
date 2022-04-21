@@ -41,10 +41,11 @@ class GameRoad : FrameLayout {
 
     var step = 0f
 
-    var onLoseCallBack: () -> Unit = {}
+    private var eventListener: (RoadEvent) -> Unit = {}
 
-    var onScoreCallBack: () -> Unit = {}
-
+    fun onEvent(eventListener: (RoadEvent) -> Unit) {
+        this.eventListener = eventListener
+    }
 
     var threadSleep = 10L
 
@@ -124,16 +125,23 @@ class GameRoad : FrameLayout {
             if (verticalDistance < carHalfSize * -1) {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     ///  lose
-                    onLoseCallBack()
+                    eventListener.invoke(RoadEvent.GameOver)
+//                    onEvent(eventListener)
+//                    onLoseCallBack()
                 }
             } else if (abs(verticalDistance) < carHalfSize && abs(horizontalDistance) < hurdleHalfSize) {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     /// score
                     hurdle.setAsUsed()
-                    onScoreCallBack()
+                    eventListener.invoke(RoadEvent.OnScoreCallBack)
+//                    onEvent(eventListener)
+//                    onScoreCallBack()
                 } else if (!hurdle.isScore) {
                     // lose
-                    onLoseCallBack()
+//                    eventListener.invoke(RoadEvent.GameOver)
+                    eventListener.invoke(RoadEvent.GameOver)
+//                    onEvent(eventListener)
+//                    onLoseCallBack()
                 }
             }
 

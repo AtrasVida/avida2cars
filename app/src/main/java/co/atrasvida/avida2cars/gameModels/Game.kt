@@ -7,14 +7,18 @@ class Game {
 
     var roads: ArrayList<GameRoad> = arrayListOf()
 
-    fun onEvent(event : (GameEvent) -> Unit) {
+    fun onEvent(event: (GameEvent) -> Unit) {
         for (road in roads) {
-            road.onLoseCallBack = {
-                event.invoke(GameEvent.GameOver)
-                stopGame()
-            }
-            road.onScoreCallBack = {
-                event.invoke(GameEvent.OnScoreCallBack(++score))
+            road.onEvent { roadEvent ->
+                when(roadEvent){
+                    RoadEvent.GameOver -> {
+                        event.invoke(GameEvent.GameOver)
+                        stopGame()
+                    }
+                    is RoadEvent.OnScoreCallBack -> {
+                        event.invoke(GameEvent.OnScoreCallBack(++score))
+                    }
+                }
             }
         }
     }
