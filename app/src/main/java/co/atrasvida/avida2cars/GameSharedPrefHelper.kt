@@ -7,7 +7,6 @@ import android.content.SharedPreferences
  * @property score In this variable we save the user's current score
  * @property bestScore In this variable we save the best user score
  *
- * @see GameSharedPrefHelper
  */
 class GameSharedPrefHelper constructor(
     private val sp: SharedPreferences
