@@ -1,6 +1,9 @@
 package co.atrasvida.avida2cars.gameModels
 
-class Game {
+import android.content.SharedPreferences
+import co.atrasvida.avida2cars.GameSharedPrefHelper
+
+class Game(private val gameSP: GameSharedPrefHelper) {
     private var score = 0
 
     fun getScore() = score
@@ -10,13 +13,19 @@ class Game {
     fun onEvent(event: (GameEvent) -> Unit) {
         for (road in roads) {
             road.onEvent { roadEvent ->
-                when(roadEvent){
+                when (roadEvent) {
                     RoadEvent.GameOver -> {
-                        event.invoke(GameEvent.GameOver)
+                        saveScore(score)
+                        event.invoke(
+                            GameEvent.GameOver(
+                                currentScore = getScore(),
+                                bestScore = getBestScore()
+                            )
+                        )
                         stopGame()
                     }
-                    is RoadEvent.OnScoreCallBack -> {
-                        event.invoke(GameEvent.OnScoreCallBack(++score))
+                    is RoadEvent.UpdateScore -> {
+                        event.invoke(GameEvent.UpdateScore(++score))
                     }
                 }
             }
@@ -31,11 +40,39 @@ class Game {
         }
     }
 
+    /**
+     * by calling this function we stop game
+     *
+     * @see GameRoad.stopGame
+     */
     private fun stopGame() {
         for (road in roads) {
             road.stopGame()
         }
     }
 
+    /**
+     * In this method
+     * We always store the user's current score in [SharedPreferences] using [GameSharedPrefHelper]
+     * Then, by checking the following condition,
+     * ## if (gameSP.score > gameSP.bestScore) {
+     * ##      gameSP.bestScore = score
+     * ## }
+     * if the current score is greater than the previous user's previous best score, we will save it in [SharedPreferences]
+     */
+    private fun saveScore(score: Int) {
+        gameSP.score = score
+        if (gameSP.score > gameSP.bestScore) {
+            gameSP.bestScore = score
+        }
+    }
 
+    /**
+     * return user best score
+     *
+     * @see GameSharedPrefHelper.bestScore
+     */
+    private fun getBestScore(): Int {
+        return gameSP.bestScore
+    }
 }

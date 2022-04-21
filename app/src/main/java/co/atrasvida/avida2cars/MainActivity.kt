@@ -13,56 +13,59 @@ import co.atrasvida.avida2cars.gameModels.GameEvent
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private var game = Game()
+    private lateinit var game: Game
+    private lateinit var gameSharedPrefHelper: GameSharedPrefHelper
+    private lateinit var sp: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.roadLeft.color = ContextCompat.getColor(this, R.color.red)
-        binding.roadRight.color = ContextCompat.getColor(this, R.color.blue)
+        setUpViews()
+        setUpGameView()
+    }
+
+    private fun setUpGameView() {
+        sp = getSharedPreferences("SP_GAME_CONFIG", MODE_PRIVATE)
+        gameSharedPrefHelper = GameSharedPrefHelper(sp)
+        game = Game(gameSharedPrefHelper)
         with(game) {
             roads = arrayListOf(binding.roadLeft, binding.roadRight)
             onEvent { event ->
                 when (event) {
-                    GameEvent.GameOver -> {
-                        showGameOver()
+                    is GameEvent.GameOver -> {
+                        showGameOver(event)
                     }
-                    is GameEvent.OnScoreCallBack -> {
+                    is GameEvent.UpdateScore -> {
                         binding.txtScore.text = event.score.toString()
                     }
                 }
             }
         }
+    }
+
+    private fun setUpViews() {
+        with(binding){
+            roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
+            roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
+            imgReset.setOnClickListener {
+                game.restartOrPlayGame()
+                binding.cslMenu.visibility = View.GONE
+                roadLeft.isEnabled = true
+                roadRight.isEnabled = true
+            }
+        }
         Handler(Looper.getMainLooper()).postDelayed({
             game.restartOrPlayGame()
         }, 1000)
-        binding.imgReset.setOnClickListener {
-            game.restartOrPlayGame()
-            binding.cslMenu.visibility = View.GONE
+    }
+
+    private fun showGameOver(event: GameEvent.GameOver) {
+        with(binding) {
+            cslMenu.visibility = View.VISIBLE
+            txtScoreMenu.text = event.currentScore.toString()
+            binding.txtBestScoreMenu.text = event.bestScore.toString()
+            roadLeft.isEnabled = false
+            roadRight.isEnabled = false
         }
-    }
-
-    private fun showGameOver() {
-        binding.cslMenu.visibility = View.VISIBLE
-        binding.txtScoreMenu.text = game.getScore().toString()
-
-        if (game.getScore() > getBestScore()) {
-            saveScore(game.getScore())
-        }
-
-        binding.txtBestScoreMenu.text = getBestScore().toString()
-    }
-
-    private fun saveScore(score: Int) {
-        val editor: SharedPreferences.Editor =
-            getSharedPreferences("GAME_SCORE", MODE_PRIVATE).edit()
-        editor.putInt("BEST_SCORE", score).apply()
-
-    }
-
-    private fun getBestScore(): Int {
-        val prefs: SharedPreferences = getSharedPreferences("GAME_SCORE", MODE_PRIVATE)
-
-        return prefs.getInt("BEST_SCORE", 0)
     }
 }

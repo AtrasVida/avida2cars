@@ -13,7 +13,6 @@ class Car(context: Context) : AppCompatImageView(context) {
         set(value) {
             field = value
             handler.post { revalidate() }
-
         }
 
 

@@ -1,6 +1,6 @@
 package co.atrasvida.avida2cars.gameModels
 
 sealed class GameEvent {
-    object GameOver : GameEvent()
-    data class OnScoreCallBack(val score : Int) : GameEvent()
+    data class GameOver(val currentScore: Int, val bestScore: Int) : GameEvent()
+    data class UpdateScore(val score: Int) : GameEvent()
 }

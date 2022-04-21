@@ -56,10 +56,10 @@ class GameRoad : FrameLayout {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-
-        if (event!!.action == MotionEvent.ACTION_DOWN)
-            car!!.side = if (car!!.side == 0) 1 else 0
-
+        if (isEnabled) {
+            if (event!!.action == MotionEvent.ACTION_DOWN)
+                car!!.side = if (car!!.side == 0) 1 else 0
+        }
         return super.onTouchEvent(event)
 
     }
@@ -126,22 +126,15 @@ class GameRoad : FrameLayout {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     ///  lose
                     eventListener.invoke(RoadEvent.GameOver)
-//                    onEvent(eventListener)
-//                    onLoseCallBack()
                 }
             } else if (abs(verticalDistance) < carHalfSize && abs(horizontalDistance) < hurdleHalfSize) {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     /// score
                     hurdle.setAsUsed()
-                    eventListener.invoke(RoadEvent.OnScoreCallBack)
-//                    onEvent(eventListener)
-//                    onScoreCallBack()
+                    eventListener.invoke(RoadEvent.UpdateScore)
                 } else if (!hurdle.isScore) {
                     // lose
-//                    eventListener.invoke(RoadEvent.GameOver)
                     eventListener.invoke(RoadEvent.GameOver)
-//                    onEvent(eventListener)
-//                    onLoseCallBack()
                 }
             }
 
@@ -170,6 +163,9 @@ class GameRoad : FrameLayout {
     }
 
 
+    /**
+     * by calling this function we rest
+     */
     fun stopGame() {
         isRunning = false
         mainThread.interrupt()
@@ -177,7 +173,6 @@ class GameRoad : FrameLayout {
     }
 
 
-    // FIXME: Create some مانع
     private fun initHurdles() {
 
         if (hurdles.size > 0)
@@ -201,7 +196,6 @@ class GameRoad : FrameLayout {
 
             hurdle.side = if (Random().nextBoolean()) 0 else 1
 
-            // FIXME: Shift hurdle to top for first launch
             hurdle.centerY = (i * hurdleDistance - height / 2).toFloat()
 
             hurdle.size = widthFactor / 3
