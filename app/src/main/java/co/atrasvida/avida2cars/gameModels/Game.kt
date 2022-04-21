@@ -29,6 +29,7 @@ class Game {
     }
 
 
+    // FIXME: seperate start and resetGame
     fun startGame() {
         score = 0
         for (road in roads) {

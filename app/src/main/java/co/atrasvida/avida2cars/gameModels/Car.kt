@@ -25,6 +25,7 @@ class Car(context: Context) : AppCompatImageView(context) {
             setColorFilter(field, PorterDuff.Mode.MULTIPLY)
         }
 
+    // FIXME: Convert To Enum
     var side = 0 // 0 = left , 1 = right
         set(value) {
             field = value

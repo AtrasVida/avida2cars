@@ -29,6 +29,7 @@ class GameRoad : FrameLayout {
 
     var car: Car? = null
 
+    // FIXME: detect position of car in road
     var widthFactor = 0f
 
     var place1 = 0f
@@ -168,6 +169,7 @@ class GameRoad : FrameLayout {
     }
 
 
+    // FIXME: Create some مانع
     private fun initHurdles() {
 
         if (hurdles.size > 0)
@@ -191,6 +193,7 @@ class GameRoad : FrameLayout {
 
             hurdle.side = if (Random().nextBoolean()) 0 else 1
 
+            // FIXME: Shift hurdle to top for first launch
             hurdle.centerY = (i * hurdleDistance - height / 2).toFloat()
 
             hurdle.size = widthFactor / 3
