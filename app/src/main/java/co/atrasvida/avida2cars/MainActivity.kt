@@ -5,69 +5,52 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
+import co.atrasvida.avida2cars.databinding.ActivityMainBinding
 import co.atrasvida.avida2cars.gameModels.Game
-import co.atrasvida.avida2cars.gameModels.GameRoad
+import co.atrasvida.avida2cars.gameModels.GameEvent
 
 class MainActivity : AppCompatActivity() {
-
-
-    lateinit var cslMenu: ConstraintLayout
-    lateinit var txtScoreMenu: TextView
-    lateinit var txtBestScoreMenu: TextView
-
-
-    var game = Game()
+    private lateinit var binding: ActivityMainBinding
+    private var game = Game()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val roadLeft: GameRoad = findViewById(R.id.roadLeft)
-        val roadRight: GameRoad = findViewById(R.id.roadRight)
-        txtBestScoreMenu = findViewById(R.id.txtBestScoreMenu)
-
-        val txtScore: TextView = findViewById(R.id.txtScore)
-
-        cslMenu = findViewById(R.id.cslMenu)
-        txtScoreMenu = findViewById(R.id.txtScoreMenu)
-
-        val imgReset: ImageView = findViewById(R.id.imgReset)
-
-        roadLeft.color = resources.getColor(R.color.red)
-        roadRight.color = resources.getColor(R.color.blue)
-
-        game.roads = arrayListOf(roadLeft, roadRight)
-
-        game.onLoseCallBack = {
-            showGameOver()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.roadLeft.color = ContextCompat.getColor(this, R.color.red)
+        binding.roadRight.color = ContextCompat.getColor(this, R.color.blue)
+        with(game) {
+            roads = arrayListOf(binding.roadLeft, binding.roadRight)
+            onEvent { event ->
+                when (event) {
+                    GameEvent.GameOver -> {
+                        showGameOver()
+                    }
+                    is GameEvent.OnScoreCallBack -> {
+                        binding.txtScore.text = event.score.toString()
+                    }
+                }
+            }
         }
-
-        game.onScoreCallBack = { totalScore ->
-            txtScore.text = totalScore.toString()
-        }
-
         Handler(Looper.getMainLooper()).postDelayed({
-            game.startGame()
+            game.restartOrPlayGame()
         }, 1000)
-
-
-        imgReset.setOnClickListener {
-            game.startGame()
-            cslMenu.visibility = View.GONE
+        binding.imgReset.setOnClickListener {
+            game.restartOrPlayGame()
+            binding.cslMenu.visibility = View.GONE
         }
     }
 
     private fun showGameOver() {
-        cslMenu.visibility = View.VISIBLE
-        txtScoreMenu.text = game.getScore().toString()
+        binding.cslMenu.visibility = View.VISIBLE
+        binding.txtScoreMenu.text = game.getScore().toString()
 
         if (game.getScore() > getBestScore()) {
             saveScore(game.getScore())
         }
 
-        txtBestScoreMenu.text = getBestScore().toString()
+        binding.txtBestScoreMenu.text = getBestScore().toString()
     }
 
     private fun saveScore(score: Int) {

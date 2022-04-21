@@ -1,43 +1,33 @@
 package co.atrasvida.avida2cars.gameModels
 
 class Game {
-
-    var onLoseCallBack: () -> Unit = {}
-
-    var onScoreCallBack: (Int) -> Unit = {}
-
     private var score = 0
 
     fun getScore() = score
 
     var roads: ArrayList<GameRoad> = arrayListOf()
-        set(value) {
-            field = value
-            setCallBacks()
-        }
 
-    private fun setCallBacks() {
+    fun onEvent(event : (GameEvent) -> Unit) {
         for (road in roads) {
             road.onLoseCallBack = {
-                onLoseCallBack()
+                event.invoke(GameEvent.GameOver)
                 stopGame()
             }
             road.onScoreCallBack = {
-                onScoreCallBack(++score)
+                event.invoke(GameEvent.OnScoreCallBack(++score))
             }
         }
     }
 
 
-    // FIXME: seperate start and resetGame
-    fun startGame() {
+    fun restartOrPlayGame() {
         score = 0
         for (road in roads) {
-            road.startGame()
+            road.restartOrPlayGame()
         }
     }
 
-    fun stopGame() {
+    private fun stopGame() {
         for (road in roads) {
             road.stopGame()
         }

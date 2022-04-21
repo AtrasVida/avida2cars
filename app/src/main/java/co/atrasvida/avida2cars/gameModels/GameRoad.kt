@@ -142,7 +142,7 @@ class GameRoad : FrameLayout {
     }
 
 
-    fun startGame() {
+    fun restartOrPlayGame() {
         initHurdles()
 
         isRunning = true
