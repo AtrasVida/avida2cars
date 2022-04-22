@@ -29,11 +29,11 @@ class GameRoad : FrameLayout {
 
     private lateinit var car: Car
 
-    // FIXME: detect position of car in road
-    var widthFactor = 0f
 
-    var place1 = 0f
-    var place2 = 0f
+    var offsetOfCarInRoad = 0f
+
+    var offsetFirst = 0f
+    var offsetSecond = 0f
 
     var color = 0
 
@@ -55,26 +55,31 @@ class GameRoad : FrameLayout {
 
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         if (isEnabled) {
-            if (event!!.action == MotionEvent.ACTION_DOWN)
-                car.side = if (car.side == 0) 1 else 0
+            if (event.action == MotionEvent.ACTION_DOWN)
+                car.positionOfCarsInRoad =
+                    if (car.positionOfCarsInRoad == PositionOfCarsInRoad.Left) PositionOfCarsInRoad.Right else PositionOfCarsInRoad.Left
         }
         return super.onTouchEvent(event)
-
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        widthFactor = width / 4f
+        offsetOfCarInRoad = width / 4f
 
-        place1 = widthFactor * 1
-        place2 = widthFactor * 3
+        offsetFirst = offsetOfCarInRoad * 1
+        offsetSecond = offsetOfCarInRoad * 3
 
         step = height / 500f
 
-        car.init(widthFactor, height - widthFactor * 2, color, 0)
+        car.init(
+            offsetOfCarInRoad,
+            height - offsetOfCarInRoad * 2,
+            color,
+            PositionOfCarsInRoad.Left
+        )
 
     }
 
@@ -192,13 +197,13 @@ class GameRoad : FrameLayout {
 
             hurdle.color = color
 
-            hurdle.widthFactor = widthFactor
+            hurdle.offsetOfCarInRoad = offsetOfCarInRoad
 
-            hurdle.side = if (Random().nextBoolean()) 0 else 1
+            hurdle.positionOfCarsInRoad = if (Random().nextBoolean()) PositionOfCarsInRoad.Left else PositionOfCarsInRoad.Right
 
             hurdle.centerY = (i * hurdleDistance - height / 2).toFloat()
 
-            hurdle.size = widthFactor / 3
+            hurdle.size = offsetOfCarInRoad / 3
 
             hurdle.refreshIsScore()
             hurdle.refreshTop(hurdle.centerY)

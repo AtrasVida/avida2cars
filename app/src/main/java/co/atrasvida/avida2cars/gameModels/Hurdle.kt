@@ -17,12 +17,12 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
 
     var isScore = false
 
-    var widthFactor = 0f
+    var offsetOfCarInRoad = 0f
 
     var centerX = 0f
     var centerY = 0f
 
-    var side = 0 // 0 = left , 1 = right
+    var positionOfCarsInRoad : PositionOfCarsInRoad = PositionOfCarsInRoad.Left // 0 = left , 1 = right
 
     var size = 0f
 
@@ -39,9 +39,9 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
     fun refreshTop(top: Float) {
         this.centerY = top
 
-        val position = if (side == 0) 1 else 3
+        val position = if (positionOfCarsInRoad == PositionOfCarsInRoad.Left) 1 else 3
 
-        centerX = position * widthFactor
+        centerX = position * offsetOfCarInRoad
 
         layout(
             (centerX - size).toInt(),

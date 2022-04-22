@@ -24,31 +24,30 @@ class Car(context: Context) : AppCompatImageView(context) {
             setColorFilter(field, PorterDuff.Mode.MULTIPLY)
         }
 
-    // FIXME: Convert To Enum
-    var side = 0 // 0 = left , 1 = right
+    var positionOfCarsInRoad : PositionOfCarsInRoad = PositionOfCarsInRoad.Left // 0 = left , 1 = right
         set(value) {
             field = value
             changeSide()
         }
 
 
-    var place1 = 0f
-    var place2 = 0f
+    var offsetFirst = 0f
+    var offsetSecond = 0f
 
-    fun init(widthFactor: Float, top: Float, color: Int, side: Int) {
+    fun init(offsetOfCarInRoad: Float, top: Float, color: Int, position: PositionOfCarsInRoad) {
         setImageResource(R.mipmap.car)
 
         this.color = color
 
-        place1 = widthFactor * 1
-        place2 = widthFactor * 3
+        offsetFirst = offsetOfCarInRoad * 1
+        offsetSecond = offsetOfCarInRoad * 3
 
-        size = widthFactor
+        size = offsetOfCarInRoad
 
-        centerX = if (side == 0) place1 else place2
+        centerX = if (position == PositionOfCarsInRoad.Left) offsetFirst else offsetSecond
         centerY = top
 
-        this.side = side
+        this.positionOfCarsInRoad = position
 
     }
 
@@ -64,8 +63,8 @@ class Car(context: Context) : AppCompatImageView(context) {
 
         thread = Thread {
             while (isMoving) {
-                if (side == 0) {
-                    if (centerX == place1) {
+                if (positionOfCarsInRoad == PositionOfCarsInRoad.Left) {
+                    if (centerX == offsetFirst) {
                         rotation = 0f
                         isMoving = false
 
@@ -75,7 +74,7 @@ class Car(context: Context) : AppCompatImageView(context) {
                     }
                 } else {
 
-                    if (centerX == place2) {
+                    if (centerX == offsetSecond) {
                         rotation = 0f
                         isMoving = false
                     } else {

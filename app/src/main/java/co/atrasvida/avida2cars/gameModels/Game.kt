@@ -6,8 +6,6 @@ import co.atrasvida.avida2cars.GameSharedPrefHelper
 class Game(private val gameSP: GameSharedPrefHelper) {
     private var score = 0
 
-    fun getScore() = score
-
     var roads: ArrayList<GameRoad> = arrayListOf()
 
     fun onEvent(event: (GameEvent) -> Unit) {
@@ -18,7 +16,7 @@ class Game(private val gameSP: GameSharedPrefHelper) {
                         saveScore(score)
                         event.invoke(
                             GameEvent.GameOver(
-                                currentScore = getScore(),
+                                currentScore = score,
                                 bestScore = getBestScore()
                             )
                         )
