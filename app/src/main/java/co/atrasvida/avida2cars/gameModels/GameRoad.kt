@@ -4,6 +4,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 
@@ -58,8 +61,7 @@ class GameRoad : FrameLayout {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (isEnabled) {
             if (event.action == MotionEvent.ACTION_DOWN)
-                car.positionOfCarsInRoad =
-                    if (car.positionOfCarsInRoad == PositionOfCarsInRoad.Left) PositionOfCarsInRoad.Right else PositionOfCarsInRoad.Left
+                car.changeSide()
         }
         return super.onTouchEvent(event)
     }
@@ -78,13 +80,13 @@ class GameRoad : FrameLayout {
             offsetOfCarInRoad,
             height - offsetOfCarInRoad * 2,
             color,
-            PositionOfCarsInRoad.Left
+            RoadRunway.Left
         )
 
     }
 
-    var mainThread = createNewThread()
-    var speedTread = createNewSpeedThread()
+    //var mainThread = createNewThread()
+    //var speedTread = createNewSpeedThread()
 
     private fun createNewThread() = Thread {
 
@@ -110,19 +112,19 @@ class GameRoad : FrameLayout {
         }
     }
 
-    private fun setNewState() {
+    fun setNewState() {
         for (hurdle in hurdles) {
 
-            hurdle.refreshTop(hurdle.centerY + verticalMoveStep)
+            hurdle.refreshTop(hurdle.getCenterY() + verticalMoveStep)
 
-            if (hurdle.centerY > height) {
+            if (hurdle.getCenterY() > height) {
                 hurdle.refreshTop(hurdle.size * -1f)
                 hurdle.refreshIsScore()
 
             }
 
-            val verticalDistance = car.centerY - hurdle.centerY
-            val horizontalDistance = car.centerX - hurdle.centerX
+            val verticalDistance = car.getCenterY() - hurdle.getCenterY()
+            val horizontalDistance = car.getCenterY() - hurdle.getCenterY()
 
             val carHalfSize = car.size / 2
             val hurdleHalfSize = hurdle.size / 2
@@ -152,18 +154,18 @@ class GameRoad : FrameLayout {
         initHurdles()
 
         isRunning = true
-        threadSleep = 10
+        //threadSleep = 10
 
-        if (mainThread.isAlive) {
-            mainThread.interrupt()
-            speedTread.interrupt()
-        }
-
-        mainThread = createNewThread()
-        mainThread.start()
-
-        speedTread = createNewSpeedThread()
-        speedTread.start()
+//        if (mainThread.isAlive) {
+//            mainThread.interrupt()
+//            speedTread.interrupt()
+//        }
+//
+//        mainThread = createNewThread()
+//        mainThread.start()
+//
+//        speedTread = createNewSpeedThread()
+//        speedTread.start()
 
     }
 
@@ -173,8 +175,8 @@ class GameRoad : FrameLayout {
      */
     fun stopGame() {
         isRunning = false
-        mainThread.interrupt()
-        speedTread.interrupt()
+//        mainThread.interrupt()
+//        speedTread.interrupt()
     }
 
 
@@ -199,15 +201,15 @@ class GameRoad : FrameLayout {
 
             hurdle.offsetOfCarInRoad = offsetOfCarInRoad
 
-            hurdle.positionOfCarsInRoad =
-                if (Random().nextBoolean()) PositionOfCarsInRoad.Left else PositionOfCarsInRoad.Right
+            hurdle.roadRunway =
+                if (Random().nextBoolean()) RoadRunway.Left else RoadRunway.Right
 
-            hurdle.centerY = (i * hurdleDistance - height / 2).toFloat()
+            hurdle.setCenterY((i * hurdleDistance - height / 2).toFloat())
 
             hurdle.size = offsetOfCarInRoad / 3
 
             hurdle.refreshIsScore()
-            hurdle.refreshTop(hurdle.centerY)
+            hurdle.refreshTop(hurdle.getCenterY())
 
             addView(hurdle)
 

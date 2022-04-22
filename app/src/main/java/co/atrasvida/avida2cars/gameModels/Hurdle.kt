@@ -8,7 +8,6 @@ import java.util.*
 
 class Hurdle(context: Context) : AppCompatImageView(context) {
 
-
     var color = 0
         set(value) {
             field = value
@@ -19,10 +18,16 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
 
     var offsetOfCarInRoad = 0f
 
-    var centerX = 0f
-    var centerY = 0f
+    private var centerX = 0f
+    fun getCenterX() = centerX
 
-    var positionOfCarsInRoad : PositionOfCarsInRoad = PositionOfCarsInRoad.Left // 0 = left , 1 = right
+    private var centerY = 0f
+    fun getCenterY() = centerY
+    fun setCenterY(y: Float) {
+        centerY = y
+    }
+
+    var roadRunway: RoadRunway = RoadRunway.Left
 
     var size = 0f
 
@@ -39,7 +44,7 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
     fun refreshTop(top: Float) {
         this.centerY = top
 
-        val position = if (positionOfCarsInRoad == PositionOfCarsInRoad.Left) 1 else 3
+        val position = if (roadRunway == RoadRunway.Left) 1 else 3
 
         centerX = position * offsetOfCarInRoad
 
@@ -49,7 +54,6 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
             (centerX + size).toInt(),
             (centerY + size).toInt()
         )
-
     }
 
     fun setAsUsed() {

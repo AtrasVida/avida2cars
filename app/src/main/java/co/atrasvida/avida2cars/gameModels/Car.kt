@@ -4,19 +4,17 @@ import android.content.Context
 import android.graphics.PorterDuff
 import androidx.appcompat.widget.AppCompatImageView
 import co.atrasvida.avida2cars.R
+import kotlinx.coroutines.*
 
 class Car(context: Context) : AppCompatImageView(context) {
 
     var size = 0f
 
-    var centerX = 0f
-        set(value) {
-            field = value
-            handler.post { revalidate() }
-        }
+    private var centerX = 0f
+    public fun getCenterX() = centerX
 
-
-    var centerY = 0f
+    private var centerY = 0f
+    public fun getCenterY() = centerY
 
     var color = 0
         set(value) {
@@ -24,17 +22,14 @@ class Car(context: Context) : AppCompatImageView(context) {
             setColorFilter(field, PorterDuff.Mode.MULTIPLY)
         }
 
-    var positionOfCarsInRoad : PositionOfCarsInRoad = PositionOfCarsInRoad.Left // 0 = left , 1 = right
-        set(value) {
-            field = value
-            changeSide()
-        }
+    private var roadRunway: RoadRunway =
+        RoadRunway.Left // 0 = left , 1 = right
 
 
     var offsetFirst = 0f
     var offsetSecond = 0f
 
-    fun init(offsetOfCarInRoad: Float, top: Float, color: Int, position: PositionOfCarsInRoad) {
+    fun init(offsetOfCarInRoad: Float, top: Float, color: Int, positionRunway: RoadRunway) {
         setImageResource(R.mipmap.car)
 
         this.color = color
@@ -44,36 +39,52 @@ class Car(context: Context) : AppCompatImageView(context) {
 
         size = offsetOfCarInRoad
 
-        centerX = if (position == PositionOfCarsInRoad.Left) offsetFirst else offsetSecond
+        centerX = if (positionRunway == RoadRunway.Left) offsetFirst else offsetSecond
         centerY = top
 
-        this.positionOfCarsInRoad = position
+        this.roadRunway = positionRunway
 
     }
 
-    lateinit var thread: Thread
-
     var isMoving = false
 
-    private fun changeSide() {
+    fun changeSide() {
+        isMoving = false
+        if (roadRunway == RoadRunway.Left) moveToRight() else moveToLeft()
+    }
 
+    private fun moveToLeft() {
         if (isMoving) return
 
         isMoving = true
+        roadRunway = RoadRunway.Left
 
-        thread = Thread {
-            while (isMoving) {
-                if (positionOfCarsInRoad == PositionOfCarsInRoad.Left) {
+        GlobalScope.launch {
+            while (isMoving && roadRunway == RoadRunway.Left) {
+                withContext(Dispatchers.Main) {
                     if (centerX == offsetFirst) {
                         rotation = 0f
                         isMoving = false
-
                     } else {
                         centerX -= 10
                         rotation = -30f
                     }
-                } else {
+                    revalidate()
+                }
+                delay(10)
+            }
+        }
+    }
 
+    fun moveToRight() {
+        if (isMoving) return
+
+        isMoving = true
+        roadRunway = RoadRunway.Right
+
+        GlobalScope.launch {
+            while (isMoving && roadRunway == RoadRunway.Right) {
+                withContext(Dispatchers.Main) {
                     if (centerX == offsetSecond) {
                         rotation = 0f
                         isMoving = false
@@ -81,18 +92,11 @@ class Car(context: Context) : AppCompatImageView(context) {
                         centerX += 10
                         rotation = +30f
                     }
+                    revalidate()
                 }
-
-                try {
-                    Thread.sleep(10)
-                } catch (e: Exception) {
-
-                }
+                delay(10)
             }
         }
-
-        thread.start()
-
     }
 
     private fun revalidate() {

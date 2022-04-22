@@ -1,12 +1,19 @@
 package co.atrasvida.avida2cars.gameModels
 
 import android.content.SharedPreferences
+import android.os.Build
 import co.atrasvida.avida2cars.GameSharedPrefHelper
+import kotlinx.coroutines.*
+import java.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class Game(private val gameSP: GameSharedPrefHelper) {
     private var score = 0
 
+    var isGameRunning = false
     var roads: ArrayList<GameRoad> = arrayListOf()
+    private val uiScope = MainScope()
 
     fun onEvent(event: (GameEvent) -> Unit) {
         for (road in roads) {
@@ -30,12 +37,15 @@ class Game(private val gameSP: GameSharedPrefHelper) {
         }
     }
 
-
-    fun restartOrPlayGame() {
+       suspend fun restartOrPlayGame() {
         score = 0
+        gameSpeed = 0
+        isGameRunning = true
         for (road in roads) {
             road.restartOrPlayGame()
         }
+        speedChanger.join()
+        gameEngine.join()
     }
 
     /**
@@ -44,9 +54,12 @@ class Game(private val gameSP: GameSharedPrefHelper) {
      * @see GameRoad.stopGame
      */
     private fun stopGame() {
+        isGameRunning = false
         for (road in roads) {
             road.stopGame()
         }
+        speedChanger.cancel()
+        gameEngine.cancel()
     }
 
     /**
@@ -73,4 +86,31 @@ class Game(private val gameSP: GameSharedPrefHelper) {
     private fun getBestScore(): Int {
         return gameSP.bestScore
     }
+
+    var gameSpeed = 1L
+    var gameMaxSpeed = 20L
+
+    var speedChanger: Job = uiScope.launch {
+        var rsult = withContext(Dispatchers.Main) {
+            while (isGameRunning) {
+                gameSpeed++
+                delay(20 * 1000L)
+                //delay(20.toDuration(DurationUnit.SECONDS))
+            }
+        }
+    }
+
+    var gameEngine: Job = uiScope.launch {
+        var rsult =  withContext(Dispatchers.Main) {
+            while (isGameRunning) {
+
+                for (road in roads) {
+                    road.setNewState()
+                }
+                delay(gameSpeed - gameSpeed)
+            }
+        }
+    }
+
+
 }
