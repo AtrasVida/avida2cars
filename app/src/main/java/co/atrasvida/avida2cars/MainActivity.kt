@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         game = Game(gameSharedPrefHelper)
         with(game) {
             roads = arrayListOf(binding.roadLeft, binding.roadRight)
+            prepareGame()
             onEvent { event ->
                 when (event) {
                     is GameEvent.GameOver -> {
@@ -60,13 +61,6 @@ class MainActivity : AppCompatActivity() {
                 roadRight.isEnabled = true
             }
         }
-        lifecycleScope.launchWhenStarted {
-            delay(1000)
-            game.restartOrPlayGame()
-        }
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            game.restartOrPlayGame()
-//        }, 1000)
     }
 
     private fun showGameOver(event: GameEvent.GameOver) {

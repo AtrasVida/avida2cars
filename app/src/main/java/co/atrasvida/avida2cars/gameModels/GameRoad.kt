@@ -14,7 +14,6 @@ import java.util.*
 import kotlin.math.abs
 
 class GameRoad : FrameLayout {
-    private val mainScope = MainScope()
 
     constructor(context: Context) : super(context) {
         init()
@@ -36,8 +35,9 @@ class GameRoad : FrameLayout {
 
     private lateinit var car: Car
 
-
     var offsetOfCarInRoad = 0f
+    var carSize = 0f
+    var hurdleSize = 0f
 
     var leftSide = 0f
     var rightSide = 0f
@@ -54,12 +54,10 @@ class GameRoad : FrameLayout {
         this.eventListener = eventListener
     }
 
-    var threadSleep = 10L
-
     fun init() {
         car = Car(context)
         addView(car)
-
+        isEnabled = false
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -74,6 +72,8 @@ class GameRoad : FrameLayout {
         super.onLayout(changed, left, top, right, bottom)
 
         offsetOfCarInRoad = width / 4f
+        carSize = width / 4f
+        hurdleSize = width / 4f
 
         leftSide = offsetOfCarInRoad * 1
         rightSide = offsetOfCarInRoad * 3
@@ -82,51 +82,12 @@ class GameRoad : FrameLayout {
 
         car.init(
             offsetOfCarInRoad,
+            carSize = carSize,
             height - offsetOfCarInRoad * 2,
             color,
             RoadRunway.Left
         )
 
-    }
-
-    //var mainThread = createNewThread()
-    private suspend fun mainThread() = mainScope.launch {
-        while (isRunning) {
-            handler.post { setNewState() }
-            delay(threadSleep)
-        }
-    }
-
-    private suspend fun speedThread() = mainScope.launch {
-        while (isRunning) {
-            delay(20000L)
-            threadSleep--
-        }
-    }
-    //var speedTread = createNewSpeedThread()
-
-    private fun createNewThread() = Thread {
-
-        while (isRunning) {
-
-            handler.post { setNewState() }
-
-            try {
-                Thread.sleep(threadSleep)
-            } catch (e: Exception) {
-            }
-        }
-
-    }
-
-    fun createNewSpeedThread() = Thread {
-        while (isRunning) {
-            try {
-                Thread.sleep(20000)
-                threadSleep--
-            } catch (e: java.lang.Exception) {
-            }
-        }
     }
 
     fun setNewState() {
@@ -135,23 +96,23 @@ class GameRoad : FrameLayout {
             hurdle.refreshTop(hurdle.getCenterY() + verticalMoveStep)
 
             if (hurdle.getCenterY() > height) {
-                hurdle.refreshTop(hurdle.size * -1f)
+                hurdle.refreshTop(hurdleSize * -1f)
                 hurdle.refreshIsScore()
 
             }
 
             val verticalDistance = car.getCenterY() - hurdle.getCenterY()
-            val horizontalDistance = car.getCenterY() - hurdle.getCenterY()
+            val horizontalDistance = car.getCenterX() - hurdle.getCenterX()
 
-            val carHalfSize = car.size / 2
-            val hurdleHalfSize = hurdle.size / 2
+            val carTouchSeverity = carSize / 1.7
+            val hurdleTouchSeverity = hurdleSize / 1.7
 
-            if (verticalDistance < carHalfSize * -1) {
+            if (verticalDistance < carTouchSeverity * -1) {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     ///  lose
                     eventListener.invoke(RoadEvent.GameOver)
                 }
-            } else if (abs(verticalDistance) < carHalfSize && abs(horizontalDistance) < hurdleHalfSize) {
+            } else if (abs(verticalDistance) < carTouchSeverity && abs(horizontalDistance) < hurdleTouchSeverity) {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     /// score
                     hurdle.setAsUsed()
@@ -169,29 +130,7 @@ class GameRoad : FrameLayout {
 
     fun restartOrPlayGame() {
         initHurdles()
-
         isRunning = true
-        //threadSleep = 10
-
-        mainScope.launch {
-            if (mainThread().isActive) {
-                mainThread().cancel()
-                speedThread().cancel()
-            }
-            mainThread().join()
-            speedThread().join()
-        }
-//        if (mainThread.isAlive) {
-//            mainThread.interrupt()
-//            speedTread.interrupt()
-//        }
-//
-//        mainThread = createNewThread()
-//        mainThread.start()
-//
-//        speedTread = createNewSpeedThread()
-//        speedTread.start()
-
     }
 
 
@@ -200,12 +139,6 @@ class GameRoad : FrameLayout {
      */
     fun stopGame() {
         isRunning = false
-        mainScope.launch {
-            mainThread().cancel()
-            speedThread().cancel()
-        }
-//        mainThread.interrupt()
-//        speedTread.interrupt()
     }
 
 
@@ -233,12 +166,12 @@ class GameRoad : FrameLayout {
             hurdle.roadRunway =
                 if (Random().nextBoolean()) RoadRunway.Left else RoadRunway.Right
 
-            hurdle.setCenterY((i * hurdleDistance - height / 2).toFloat())
-
-            hurdle.size = offsetOfCarInRoad / 3
+            hurdle.size = hurdleSize
 
             hurdle.refreshIsScore()
-            hurdle.refreshTop(hurdle.getCenterY())
+
+            val centerY = ((i * hurdleDistance - height / 2).toFloat())
+            hurdle.refreshTop(centerY)
 
             addView(hurdle)
 

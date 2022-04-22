@@ -49,10 +49,10 @@ class Hurdle(context: Context) : AppCompatImageView(context) {
         centerX = position * offsetOfCarInRoad
 
         layout(
-            (centerX - size).toInt(),
-            (centerY - size).toInt(),
-            (centerX + size).toInt(),
-            (centerY + size).toInt()
+            (centerX - size / 2).toInt(),
+            (centerY - size / 2).toInt(),
+            (centerX + size / 2).toInt(),
+            (centerY + size / 2).toInt()
         )
     }
 

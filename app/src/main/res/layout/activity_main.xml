@@ -87,7 +87,7 @@
         android:layout_height="match_parent"
 
         android:background="#bf000000"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:visibility="visible">
 
         <TextView

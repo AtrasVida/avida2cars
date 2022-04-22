@@ -15,7 +15,10 @@ class Game(
 
     var isGameRunning = false
     var roads: ArrayList<GameRoad> = arrayListOf()
-    private val uiScope = MainScope()
+
+    private var gameSpeed = 1L
+    var gameMaxSpeed = 20L
+
 
     fun onEvent(event: (GameEvent) -> Unit) {
         for (road in roads) {
@@ -46,8 +49,8 @@ class Game(
         for (road in roads) {
             road.restartOrPlayGame()
         }
-        speedChanger().join()
         gameEngine().join()
+        speedChanger().join()
     }
 
     /**
@@ -89,14 +92,10 @@ class Game(
         return gameSP.bestScore
     }
 
-    private var gameSpeed = 1L
-    var gameMaxSpeed = 20L
-
     private suspend fun speedChanger() = mainScope.launch {
         while (isGameRunning) {
             gameSpeed++
             delay(20 * 1000L)
-            //delay(20.toDuration(DurationUnit.SECONDS))
         }
     }
 
@@ -105,7 +104,15 @@ class Game(
             for (road in roads) {
                 road.setNewState()
             }
-            delay(gameSpeed - gameSpeed)
+            delay(gameMaxSpeed - gameSpeed)
+        }
+    }
+
+    fun prepareGame() {
+        mainScope.launch {
+            for (road in roads) {
+                road.setNewState()
+            }
         }
     }
 }

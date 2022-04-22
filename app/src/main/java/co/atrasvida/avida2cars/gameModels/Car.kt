@@ -23,14 +23,19 @@ class Car(context: Context) : AppCompatImageView(context) {
             setColorFilter(field, PorterDuff.Mode.MULTIPLY)
         }
 
-    private var roadRunway: RoadRunway =
-        RoadRunway.Left // 0 = left , 1 = right
+    private var roadRunway: RoadRunway = RoadRunway.Left
 
 
     var offsetFirst = 0f
     var offsetSecond = 0f
 
-    fun init(offsetOfCarInRoad: Float, top: Float, color: Int, positionRunway: RoadRunway) {
+    fun init(
+        offsetOfCarInRoad: Float,
+        carSize: Float,
+        top: Float,
+        color: Int,
+        positionRunway: RoadRunway
+    ) {
         setImageResource(R.mipmap.car)
 
         this.color = color
@@ -38,13 +43,14 @@ class Car(context: Context) : AppCompatImageView(context) {
         offsetFirst = offsetOfCarInRoad * 1
         offsetSecond = offsetOfCarInRoad * 3
 
-        size = offsetOfCarInRoad
+        size = carSize
 
         centerX = if (positionRunway == RoadRunway.Left) offsetFirst else offsetSecond
         centerY = top
 
         this.roadRunway = positionRunway
 
+        revalidate()
     }
 
     var isMoving = false
