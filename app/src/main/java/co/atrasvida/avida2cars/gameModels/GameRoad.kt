@@ -32,14 +32,14 @@ class GameRoad : FrameLayout {
 
     var offsetOfCarInRoad = 0f
 
-    var offsetFirst = 0f
-    var offsetSecond = 0f
+    var leftSide = 0f
+    var rightSide = 0f
 
     var color = 0
 
     var isRunning = false
 
-    var step = 0f
+    var verticalMoveStep = 0f
 
     private var eventListener: (RoadEvent) -> Unit = {}
 
@@ -69,10 +69,10 @@ class GameRoad : FrameLayout {
 
         offsetOfCarInRoad = width / 4f
 
-        offsetFirst = offsetOfCarInRoad * 1
-        offsetSecond = offsetOfCarInRoad * 3
+        leftSide = offsetOfCarInRoad * 1
+        rightSide = offsetOfCarInRoad * 3
 
-        step = height / 500f
+        verticalMoveStep = height / 500f
 
         car.init(
             offsetOfCarInRoad,
@@ -113,7 +113,7 @@ class GameRoad : FrameLayout {
     private fun setNewState() {
         for (hurdle in hurdles) {
 
-            hurdle.refreshTop(hurdle.centerY + step)
+            hurdle.refreshTop(hurdle.centerY + verticalMoveStep)
 
             if (hurdle.centerY > height) {
                 hurdle.refreshTop(hurdle.size * -1f)
@@ -199,7 +199,8 @@ class GameRoad : FrameLayout {
 
             hurdle.offsetOfCarInRoad = offsetOfCarInRoad
 
-            hurdle.positionOfCarsInRoad = if (Random().nextBoolean()) PositionOfCarsInRoad.Left else PositionOfCarsInRoad.Right
+            hurdle.positionOfCarsInRoad =
+                if (Random().nextBoolean()) PositionOfCarsInRoad.Left else PositionOfCarsInRoad.Right
 
             hurdle.centerY = (i * hurdleDistance - height / 2).toFloat()
 
