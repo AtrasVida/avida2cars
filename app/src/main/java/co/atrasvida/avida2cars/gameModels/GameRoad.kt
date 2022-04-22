@@ -6,11 +6,15 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 
 class GameRoad : FrameLayout {
+    private val mainScope = MainScope()
 
     constructor(context: Context) : super(context) {
         init()
@@ -86,6 +90,19 @@ class GameRoad : FrameLayout {
     }
 
     //var mainThread = createNewThread()
+    private suspend fun mainThread() = mainScope.launch {
+        while (isRunning) {
+            handler.post { setNewState() }
+            delay(threadSleep)
+        }
+    }
+
+    private suspend fun speedThread() = mainScope.launch {
+        while (isRunning) {
+            delay(20000L)
+            threadSleep--
+        }
+    }
     //var speedTread = createNewSpeedThread()
 
     private fun createNewThread() = Thread {
@@ -156,6 +173,14 @@ class GameRoad : FrameLayout {
         isRunning = true
         //threadSleep = 10
 
+        mainScope.launch {
+            if (mainThread().isActive) {
+                mainThread().cancel()
+                speedThread().cancel()
+            }
+            mainThread().join()
+            speedThread().join()
+        }
 //        if (mainThread.isAlive) {
 //            mainThread.interrupt()
 //            speedTread.interrupt()
@@ -175,6 +200,10 @@ class GameRoad : FrameLayout {
      */
     fun stopGame() {
         isRunning = false
+        mainScope.launch {
+            mainThread().cancel()
+            speedThread().cancel()
+        }
 //        mainThread.interrupt()
 //        speedTread.interrupt()
     }

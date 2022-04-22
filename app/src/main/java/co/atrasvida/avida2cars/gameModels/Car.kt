@@ -7,6 +7,7 @@ import co.atrasvida.avida2cars.R
 import kotlinx.coroutines.*
 
 class Car(context: Context) : AppCompatImageView(context) {
+    private val mainScope = MainScope()
 
     var size = 0f
 
@@ -59,18 +60,16 @@ class Car(context: Context) : AppCompatImageView(context) {
         isMoving = true
         roadRunway = RoadRunway.Left
 
-        GlobalScope.launch {
+        mainScope.launch {
             while (isMoving && roadRunway == RoadRunway.Left) {
-                withContext(Dispatchers.Main) {
-                    if (centerX == offsetFirst) {
-                        rotation = 0f
-                        isMoving = false
-                    } else {
-                        centerX -= 10
-                        rotation = -30f
-                    }
-                    revalidate()
+                if (centerX == offsetFirst) {
+                    rotation = 0f
+                    isMoving = false
+                } else {
+                    centerX -= 10
+                    rotation = -30f
                 }
+                revalidate()
                 delay(10)
             }
         }
@@ -82,18 +81,16 @@ class Car(context: Context) : AppCompatImageView(context) {
         isMoving = true
         roadRunway = RoadRunway.Right
 
-        GlobalScope.launch {
+        mainScope.launch {
             while (isMoving && roadRunway == RoadRunway.Right) {
-                withContext(Dispatchers.Main) {
-                    if (centerX == offsetSecond) {
-                        rotation = 0f
-                        isMoving = false
-                    } else {
-                        centerX += 10
-                        rotation = +30f
-                    }
-                    revalidate()
+                if (centerX == offsetSecond) {
+                    rotation = 0f
+                    isMoving = false
+                } else {
+                    centerX += 10
+                    rotation = +30f
                 }
+                revalidate()
                 delay(10)
             }
         }

@@ -7,9 +7,13 @@ import android.os.Looper
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import co.atrasvida.avida2cars.databinding.ActivityMainBinding
 import co.atrasvida.avida2cars.gameModels.Game
 import co.atrasvida.avida2cars.gameModels.GameEvent
+import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -48,15 +52,21 @@ class MainActivity : AppCompatActivity() {
             roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
             roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
             imgReset.setOnClickListener {
-                game.restartOrPlayGame()
+                lifecycleScope.launchWhenStarted {
+                    game.restartOrPlayGame()
+                }
                 binding.cslMenu.visibility = View.GONE
                 roadLeft.isEnabled = true
                 roadRight.isEnabled = true
             }
         }
-        Handler(Looper.getMainLooper()).postDelayed({
+        lifecycleScope.launchWhenStarted {
+            delay(1000)
             game.restartOrPlayGame()
-        }, 1000)
+        }
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            game.restartOrPlayGame()
+//        }, 1000)
     }
 
     private fun showGameOver(event: GameEvent.GameOver) {

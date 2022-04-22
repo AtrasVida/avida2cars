@@ -1,14 +1,16 @@
 package co.atrasvida.avida2cars.gameModels
 
 import android.content.SharedPreferences
-import android.os.Build
 import co.atrasvida.avida2cars.GameSharedPrefHelper
-import kotlinx.coroutines.*
-import java.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-class Game(private val gameSP: GameSharedPrefHelper) {
+class Game(
+    private val gameSP: GameSharedPrefHelper
+) {
+    private val mainScope = MainScope()
+
     private var score = 0
 
     var isGameRunning = false
@@ -27,7 +29,7 @@ class Game(private val gameSP: GameSharedPrefHelper) {
                                 bestScore = getBestScore()
                             )
                         )
-                        stopGame()
+                        mainScope.launch { stopGame() }
                     }
                     is RoadEvent.UpdateScore -> {
                         event.invoke(GameEvent.UpdateScore(++score))
@@ -37,15 +39,15 @@ class Game(private val gameSP: GameSharedPrefHelper) {
         }
     }
 
-       suspend fun restartOrPlayGame() {
+    suspend fun restartOrPlayGame() {
         score = 0
         gameSpeed = 0
         isGameRunning = true
         for (road in roads) {
             road.restartOrPlayGame()
         }
-        speedChanger.join()
-        gameEngine.join()
+        speedChanger().join()
+        gameEngine().join()
     }
 
     /**
@@ -53,13 +55,13 @@ class Game(private val gameSP: GameSharedPrefHelper) {
      *
      * @see GameRoad.stopGame
      */
-    private fun stopGame() {
+    private suspend fun stopGame() {
         isGameRunning = false
         for (road in roads) {
             road.stopGame()
         }
-        speedChanger.cancel()
-        gameEngine.cancel()
+        speedChanger().cancel()
+        gameEngine().cancel()
     }
 
     /**
@@ -87,30 +89,23 @@ class Game(private val gameSP: GameSharedPrefHelper) {
         return gameSP.bestScore
     }
 
-    var gameSpeed = 1L
+    private var gameSpeed = 1L
     var gameMaxSpeed = 20L
 
-    var speedChanger: Job = uiScope.launch {
-        var rsult = withContext(Dispatchers.Main) {
-            while (isGameRunning) {
-                gameSpeed++
-                delay(20 * 1000L)
-                //delay(20.toDuration(DurationUnit.SECONDS))
-            }
+    private suspend fun speedChanger() = mainScope.launch {
+        while (isGameRunning) {
+            gameSpeed++
+            delay(20 * 1000L)
+            //delay(20.toDuration(DurationUnit.SECONDS))
         }
     }
 
-    var gameEngine: Job = uiScope.launch {
-        var rsult =  withContext(Dispatchers.Main) {
-            while (isGameRunning) {
-
-                for (road in roads) {
-                    road.setNewState()
-                }
-                delay(gameSpeed - gameSpeed)
+    private suspend fun gameEngine() = mainScope.launch {
+        while (isGameRunning) {
+            for (road in roads) {
+                road.setNewState()
             }
+            delay(gameSpeed - gameSpeed)
         }
     }
-
-
 }
