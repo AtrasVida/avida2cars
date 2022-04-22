@@ -27,7 +27,7 @@ class GameRoad : FrameLayout {
 
     var hurdles = arrayListOf<Hurdle>()
 
-    var car: Car? = null
+    private lateinit var car: Car
 
     // FIXME: detect position of car in road
     var widthFactor = 0f
@@ -58,7 +58,7 @@ class GameRoad : FrameLayout {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (isEnabled) {
             if (event!!.action == MotionEvent.ACTION_DOWN)
-                car!!.side = if (car!!.side == 0) 1 else 0
+                car.side = if (car.side == 0) 1 else 0
         }
         return super.onTouchEvent(event)
 
@@ -74,7 +74,7 @@ class GameRoad : FrameLayout {
 
         step = height / 500f
 
-        car!!.init(widthFactor, height - widthFactor * 2, color, 0)
+        car.init(widthFactor, height - widthFactor * 2, color, 0)
 
     }
 
@@ -116,10 +116,10 @@ class GameRoad : FrameLayout {
 
             }
 
-            val verticalDistance = car!!.centerY - hurdle.centerY
-            val horizontalDistance = car!!.centerX - hurdle.centerX
+            val verticalDistance = car.centerY - hurdle.centerY
+            val horizontalDistance = car.centerX - hurdle.centerX
 
-            val carHalfSize = car!!.size / 2
+            val carHalfSize = car.size / 2
             val hurdleHalfSize = hurdle.size / 2
 
             if (verticalDistance < carHalfSize * -1) {

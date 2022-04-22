@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpViews() {
-        with(binding){
+        with(binding) {
             roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
             roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
             imgReset.setOnClickListener {
