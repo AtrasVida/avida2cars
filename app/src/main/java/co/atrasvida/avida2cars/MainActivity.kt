@@ -12,7 +12,7 @@ import co.atrasvida.avida2cars.gameModels.GameEvent
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var game: Game
-    private lateinit var gameSharedPrefHelper: GameSharedPrefHelper
+    private lateinit var gameSP: GameSharedPrefHelper
     private lateinit var sp: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,21 +21,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setUpViews()
         setUpGameView()
-
-        showGameOver(null)
+        showWelcomeDialog()
     }
 
     private fun setUpGameView() {
         sp = getSharedPreferences("SP_GAME_CONFIG", MODE_PRIVATE)
-        gameSharedPrefHelper = GameSharedPrefHelper(sp)
-        game = Game(gameSharedPrefHelper)
+        gameSP = GameSharedPrefHelper(sp)
+        game = Game(gameSP)
         with(game) {
             roads = arrayListOf(binding.roadLeft, binding.roadRight)
             prepareGame()
             onEvent { event ->
                 when (event) {
                     is GameEvent.GameOver -> {
-                        showGameOver(event)
+                        showGameOverDialog(event)
                     }
                     is GameEvent.UpdateScore -> {
                         binding.txtScore.text = event.score.toString()
@@ -52,21 +51,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showGameOver(event: GameEvent.GameOver?) {
+    private fun showGameOverDialog(event: GameEvent.GameOver) {
+        GameOverDialogFragment.newInstance(false, event.currentScore, event.bestScore) {
+            lifecycleScope.launchWhenStarted {
+                game.restartOrPlayGame()
+                binding.roadLeft.isEnabled = true
+                binding.roadRight.isEnabled = true
+            }
+        }.show(supportFragmentManager, "GameMenuDialogFragment")
+    }
 
-
-        GameMenuDialogFragment.newInstance(
-            event==null,
-            event?.currentScore?:0,
-            event?.bestScore?:0,
-            object : GameMenuDialogFragment.OnDialogDismissListener {
-                override fun onDialogDismissed(isOkPress: Boolean) {
-                    lifecycleScope.launchWhenStarted {
-                        game.restartOrPlayGame()
-                        binding.roadLeft.isEnabled = true
-                        binding.roadRight.isEnabled = true
-                    }
-                }
-            }).show(supportFragmentManager, "GameMenuDialogFragment")
+    private fun showWelcomeDialog() {
+        GameOverDialogFragment.newInstance(true, gameSP.score, gameSP.bestScore) {
+            lifecycleScope.launchWhenStarted {
+                game.restartOrPlayGame()
+                binding.roadLeft.isEnabled = true
+                binding.roadRight.isEnabled = true
+            }
+        }.show(supportFragmentManager, "GameMenuDialogFragment")
     }
 }
