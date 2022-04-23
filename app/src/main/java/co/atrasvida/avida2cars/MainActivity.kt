@@ -2,6 +2,9 @@ package co.atrasvida.avida2cars
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.AnimationUtils.loadAnimation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -9,7 +12,9 @@ import co.atrasvida.avida2cars.databinding.ActivityMainBinding
 import co.atrasvida.avida2cars.gameModels.Game
 import co.atrasvida.avida2cars.gameModels.GameEvent
 
+
 class MainActivity : AppCompatActivity() {
+    private lateinit var animation: Animation
     private lateinit var binding: ActivityMainBinding
     private lateinit var game: Game
     private lateinit var gameSP: GameSharedPrefHelper
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
                         showGameOverDialog(event)
                     }
                     is GameEvent.UpdateScore -> {
+                        binding.txtScore.startAnimation(animation)
                         binding.txtScore.text = event.score.toString()
                     }
                 }
@@ -49,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
             roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
         }
+        animation =  loadAnimation(this, R.anim.bounce)
     }
 
     private fun showGameOverDialog(event: GameEvent.GameOver) {
