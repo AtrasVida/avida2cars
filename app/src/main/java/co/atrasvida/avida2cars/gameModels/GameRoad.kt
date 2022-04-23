@@ -57,7 +57,6 @@ class GameRoad : FrameLayout {
     fun init() {
         car = Car(context)
         addView(car)
-        isEnabled = false
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {

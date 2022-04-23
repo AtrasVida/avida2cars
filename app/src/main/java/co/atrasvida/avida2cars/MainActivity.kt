@@ -2,30 +2,27 @@ package co.atrasvida.avida2cars
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import co.atrasvida.avida2cars.databinding.ActivityMainBinding
 import co.atrasvida.avida2cars.gameModels.Game
 import co.atrasvida.avida2cars.gameModels.GameEvent
-import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var game: Game
     private lateinit var gameSharedPrefHelper: GameSharedPrefHelper
     private lateinit var sp: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setUpViews()
         setUpGameView()
+
+        showGameOver(null)
     }
 
     private fun setUpGameView() {
@@ -52,24 +49,24 @@ class MainActivity : AppCompatActivity() {
         with(binding) {
             roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
             roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
-            imgReset.setOnClickListener {
-                lifecycleScope.launchWhenStarted {
-                    game.restartOrPlayGame()
-                }
-                binding.cslMenu.visibility = View.GONE
-                roadLeft.isEnabled = true
-                roadRight.isEnabled = true
-            }
         }
     }
 
-    private fun showGameOver(event: GameEvent.GameOver) {
-        with(binding) {
-            cslMenu.visibility = View.VISIBLE
-            txtScoreMenu.text = event.currentScore.toString()
-            binding.txtBestScoreMenu.text = event.bestScore.toString()
-            roadLeft.isEnabled = false
-            roadRight.isEnabled = false
-        }
+    private fun showGameOver(event: GameEvent.GameOver?) {
+
+
+        GameMenuDialogFragment.newInstance(
+            event==null,
+            event?.currentScore?:0,
+            event?.bestScore?:0,
+            object : GameMenuDialogFragment.OnDialogDismissListener {
+                override fun onDialogDismissed(isOkPress: Boolean) {
+                    lifecycleScope.launchWhenStarted {
+                        game.restartOrPlayGame()
+                        binding.roadLeft.isEnabled = true
+                        binding.roadRight.isEnabled = true
+                    }
+                }
+            }).show(supportFragmentManager, "GameMenuDialogFragment")
     }
 }
