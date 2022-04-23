@@ -3,13 +3,8 @@ package co.atrasvida.avida2cars.gameModels
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.animation.Animation
 import android.widget.FrameLayout
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 
@@ -32,6 +27,8 @@ class GameRoad : FrameLayout {
     }
 
     var hurdles = arrayListOf<Hurdle>()
+
+    var loseAnimation: Animation? = null
 
     private lateinit var car: Car
 
@@ -71,13 +68,13 @@ class GameRoad : FrameLayout {
         super.onLayout(changed, left, top, right, bottom)
 
         offsetOfCarInRoad = width / 4f
-        carSize = width / 4f
-        hurdleSize = width / 4f
+        carSize = width / 3f
+        hurdleSize = width / 5f
 
         leftSide = offsetOfCarInRoad * 1
         rightSide = offsetOfCarInRoad * 3
 
-        verticalMoveStep = height / 500f
+        verticalMoveStep = height / 250f
 
         car.init(
             offsetOfCarInRoad,
@@ -110,6 +107,7 @@ class GameRoad : FrameLayout {
                 if (hurdle.isScore && !hurdle.isUsed) {
                     ///  lose
                     eventListener.invoke(RoadEvent.GameOver)
+                    hurdle.startAnimation(loseAnimation)
                 }
             } else if (abs(verticalDistance) < carTouchSeverity && abs(horizontalDistance) < hurdleTouchSeverity) {
                 if (hurdle.isScore && !hurdle.isUsed) {
@@ -119,6 +117,7 @@ class GameRoad : FrameLayout {
                 } else if (!hurdle.isScore) {
                     // lose
                     eventListener.invoke(RoadEvent.GameOver)
+                    hurdle.startAnimation(loseAnimation)
                 }
             }
 
@@ -127,8 +126,11 @@ class GameRoad : FrameLayout {
     }
 
 
-    fun restartOrPlayGame() {
-        initHurdles()
+    fun restartOrPlayGame(index: Int) {
+        if (index == 1) { // this is second road
+
+            initHurdles(true)
+        } else initHurdles(false)
         isRunning = true
     }
 
@@ -140,8 +142,12 @@ class GameRoad : FrameLayout {
         isRunning = false
     }
 
+    fun setMissAnimation(loseAnimation: Animation) {
+        this.loseAnimation = loseAnimation
+    }
 
-    private fun initHurdles() {
+
+    private fun initHurdles(isSomeAhead: Boolean) {
 
         if (hurdles.size > 0)
             for (hurdle in hurdles) {
@@ -169,7 +175,8 @@ class GameRoad : FrameLayout {
 
             hurdle.refreshIsScore()
 
-            val centerY = ((i * hurdleDistance - height / 2).toFloat())
+            val centerY =
+                (i * hurdleDistance - height / 2f + if (isSomeAhead) hurdleDistance / 2 else 0)
             hurdle.refreshTop(centerY)
 
             addView(hurdle)

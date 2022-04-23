@@ -3,7 +3,6 @@ package co.atrasvida.avida2cars
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.view.animation.AnimationUtils.loadAnimation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -15,9 +14,11 @@ import co.atrasvida.avida2cars.gameModels.GameEvent
 
 class MainActivity : AppCompatActivity() {
     private lateinit var animation: Animation
+    private lateinit var loseAnimation: Animation
     private lateinit var binding: ActivityMainBinding
     private lateinit var game: Game
     private lateinit var gameSP: GameSharedPrefHelper
+    private lateinit var mediaPlayerHelper: MediaPlayerHelper
     private lateinit var sp: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +33,8 @@ class MainActivity : AppCompatActivity() {
     private fun setUpGameView() {
         sp = getSharedPreferences("SP_GAME_CONFIG", MODE_PRIVATE)
         gameSP = GameSharedPrefHelper(sp)
-        game = Game(gameSP)
+        mediaPlayerHelper = MediaPlayerHelper(applicationContext, R.raw.score, R.raw.lose)
+        game = Game(gameSP, mediaPlayerHelper, loseAnimation)
         with(game) {
             roads = arrayListOf(binding.roadLeft, binding.roadRight)
             prepareGame()
@@ -55,8 +57,9 @@ class MainActivity : AppCompatActivity() {
             roadLeft.color = ContextCompat.getColor(this@MainActivity, R.color.red)
             roadRight.color = ContextCompat.getColor(this@MainActivity, R.color.blue)
         }
-        animation =  loadAnimation(this, R.anim.bounce)
-    }
+        animation = loadAnimation(this, R.anim.bounce)
+        loseAnimation = loadAnimation(this, R.anim.bounce2)
+     }
 
     private fun showGameOverDialog(event: GameEvent.GameOver) {
         GameOverDialogFragment.newInstance(false, event.currentScore, event.bestScore) {

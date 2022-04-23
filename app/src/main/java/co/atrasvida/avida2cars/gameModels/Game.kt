@@ -1,15 +1,20 @@
 package co.atrasvida.avida2cars.gameModels
 
 import android.content.SharedPreferences
+import android.view.animation.Animation
 import co.atrasvida.avida2cars.GameSharedPrefHelper
+import co.atrasvida.avida2cars.MediaPlayerHelper
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class Game(
-    private val gameSP: GameSharedPrefHelper
+    private val gameSP: GameSharedPrefHelper,
+    private val mediaPlayerHelper: MediaPlayerHelper,
+    private val loseAnimation: Animation
 ) {
     private val mainScope = MainScope()
+    private val mainScope2 = MainScope()
 
     private var score = 0
 
@@ -17,14 +22,15 @@ class Game(
     var roads: ArrayList<GameRoad> = arrayListOf()
 
     private var gameSpeed = 1L
-    var gameMaxSpeed = 20L
+    var gameMaxSpeed = 50L
 
 
     fun onEvent(event: (GameEvent) -> Unit) {
-        for (road in roads) {
+        for ((index,road) in roads.withIndex()) {
             road.onEvent { roadEvent ->
                 when (roadEvent) {
                     RoadEvent.GameOver -> {
+                        mediaPlayerHelper.playLoseEffect()
                         saveScore(score)
                         event.invoke(
                             GameEvent.GameOver(
@@ -35,6 +41,7 @@ class Game(
                         mainScope.launch { stopGame() }
                     }
                     is RoadEvent.UpdateScore -> {
+                        mediaPlayerHelper.playScoreEffect(index)
                         event.invoke(GameEvent.UpdateScore(++score))
                     }
                 }
@@ -46,11 +53,11 @@ class Game(
         score = 0
         gameSpeed = 0
         isGameRunning = true
-        for (road in roads) {
-            road.restartOrPlayGame()
+        for ((index,road) in roads.withIndex()) {
+            road.restartOrPlayGame(index)
         }
-        gameEngine().join()
-        speedChanger().join()
+        gameEngine().start()
+        speedChanger().start()
     }
 
     /**
@@ -92,10 +99,10 @@ class Game(
         return gameSP.bestScore
     }
 
-    private suspend fun speedChanger() = mainScope.launch {
+    private suspend fun speedChanger() = mainScope2.launch {
         while (isGameRunning) {
             gameSpeed++
-            delay(20 * 1000L)
+            delay(20 * 100L)
         }
     }
 
@@ -111,6 +118,7 @@ class Game(
     fun prepareGame() {
         mainScope.launch {
             for (road in roads) {
+                road.setMissAnimation(loseAnimation)
                 road.setNewState()
             }
         }
